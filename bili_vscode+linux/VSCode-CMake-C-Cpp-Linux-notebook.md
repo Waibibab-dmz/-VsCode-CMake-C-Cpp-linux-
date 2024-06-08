@@ -176,5 +176,246 @@
 * 小巧的文本编辑器
 * 适合初学者使用
 
+# 第二讲：开发环境搭建
+
+## 2.1 编译器、调试器安装
+
+**安装GCC，GDB**
+
+```bash
+sudo apt update
+sudo apt install build-essential gdb
+```
+
+**安装成功确认**
+
+```bash
+gcc --version
+g++ --version
+gdb --version
+#如果成功，则显示版本号
+```
+
+## 2.2 CMake安装
+
+**安装cmake**
+
+```bash
+sudo apt install cmake
+```
+
+**安装成功确认**
+
+```bash
+cmake --version
+```
+
+# 第三讲：GCC编译器
+
+## 3.1 编译过程
+
+**1.预处理 Pre-Processing	//.i文件**
+
+```bash
+#-E选项指示编译器仅对输入文件进行预处理
+g++ -E test.cpp -o test.i
+```
+
+**2.编译 Compiling	//.s文件**
+
+```bash
+#-S选项告诉g++在为C++代码产生了汇编语言文件后停止编译
+g++ -S test.i -o test.s
+```
+
+**3.汇编 Assembling    //.o文件**
+
+```bash
+#-c选项告诉g++仅把源代码编译为机器语言的目标代码
+g++ -c test.s -o test.o
+```
+
+**4.链接 Linking   //bin文件**
+
+```bash
+#-o选项来为产生的可执行文件用指定的文件名
+g++ test.o -o test
+```
+
+**5.上述五步汇总**
+
+```bash
+g++ test.cpp -o test
+./test #运行
+```
+
+## 3.2 g++重要编译参数
+
+**1.-g 编译带调试信息的可执行文件**
+
+```bash
+#-g选项告诉GCC产生能被GNU调试器GDB使用的调试信息，以调试程序
+g++ -g test.cpp
+```
+
+**2.-O[n]    优化源代码**
+
+```bash
+# 所谓优化，例如省略掉代码中从未使用的变量、直接将常量表达式用结果值替代等等，这些操作会缩减目标文件所包含的代码量，提高最终生成的可执行文件的运行效率
+
+# -O选项告诉g++对源代码进行基本优化，这些优化大多情况下都会使程序执行得更快
+# -O2选项告诉g++产生尽可能小和尽可能快的代码：
+# -O 同时减小代码的长度和执行时间，效果等价于-O1
+# -O0表示不做优化
+# -O1 默认优化
+# -O2 除了完成-O1优化之外，还进行一些额外的调整工作，如指令调整等
+# -O3 包括循环展开和其它一些与处理特性相关的优化工作
+# 选项将使编译的速度比使用-O时慢，但通常产生的代码执行速度会更快
+
+g++ -O2 test.cpp
+#linux可以通过time指令记录执行时间，如：time ./test
+```
+
+**3. -l / -L 指定库文件/指定库文件路径**
+
+```bash
+# -l参数就是用来指定程序要链接的库，-l参数紧接着就是库名
+# 在/lib和/usr/lib和/usr/local/lib里的库直接用-l参数就能链接
+# 链接glog库
+g++ -lglog test.cpp
+#如果库文件没放在上面三个目录里，需要使用-L指定库文件所在目录
+g++ -L/home/bing/mytestlibfolder -lmytest test.cpp
+```
+
+**4. -I 指定头文件搜索目录**
+
+```bash
+# /usr/include目录一般不用指定，gcc知道哪里去找，但如果头文件不在/usr/include中，就需要用-I参数指定，可以使用相对路径
+g++ -I/myinclude
+```
+
+**5. -Wall 打印警告信息**
+
+```bash
+g++ -Wall test.cpp
+```
+
+**6. -w 关闭警告信息**
+
+```bash
+g++ -w test.cpp
+```
+
+**7. -std=c++11 设置编译标准**
+
+```bash
+g++ -std=c++11 test.cpp
+```
+
+**8. -o 指定输出文件名**
+
+```bash
+g++ test.cpp -o test
+```
+
+**9. -D 定义宏**
+
+```c
+//在使用gcc/g++编译的时候定义宏
+//常用场景：
+//-DDEBUG 定义宏，可能文件中有DEBUG宏部分的相关信息，可以通过DDEBUG来选择开启DEBUG
+#include<stdio.h>
+int main()
+{
+    #ifdef DEBUG
+    	printf("DEBUG LOG\n");
+    #endif
+    	printf("in\n");
+}
+//在编译的使用可以用：gcc -DDEBUG main.cpp 则第8行代码可以被执行
+```
+
+## 3.3 g++命令行编译（实战）
+
+**案例：**目录结构如下所示
+
+<img src="Pic/chapter3-1.png" alt="pic" style="zoom:200%;" />
+
+### 3.3.1直接编译
+
+```bash
+g++ main.cpp src/Swap.cpp -Iinclude
+./a.out
+```
+
+或者可以多带一些参数
+
+```bash
+g++ main.cpp src/Swap.cpp -Iinclude -std=c++11 -O2 -Wall -o b.out
+./b.out
+```
+
+### 3.3.2 生成文件库编译
+
+> 什么是库？库是写好的，现有的，成熟的，可以复用的代码。现实中每个程序都要依赖很多基础的底层库，不可能每个人的代码都从零开始，因此库的存在意义非同寻常
+>
+> 本质上来说，库是一种可执行代码的二进制形式，可以被操作系统载入内存执行。库有两种：静态库（.a、.lib）和动态库（.so、.dll）
+>
+> 静态库：在链接阶段，会将汇编生成的目标文件.o与引用的库一起链接打包到可执行文件中，对应的方式叫做静态链接，静态库和.o文件格式相似，可以看成一组.o文件的集合，即很多目标文件经过压缩打包后形成的一个文件
+>
+> 静态库特点如下：
+>
+> 1.程序在运行时与函数库再无瓜葛，移植方便
+>
+> 2.浪费空间与资源，因为所有相关的目标文件与牵涉到的函数库被链接成一个可执行文件
+>
+> 静态库存在两个问题：
+>
+> 1.空间浪费，例如静态库占用1M内存，如果有2000个程序要使用这个静态库，则此静态库要在空间中存在多份拷贝，导致空间浪费
+>
+> 2.静态库对程序的更新、部署带来麻烦，如果静态库libxx.lib更新了，所有使用它的应用程序都需要重新编译、发布给用户
+>
+> 动态库：在程序编译时并不会被连接到目标代码中，而是在程序运行是才被载入。不同的应用程序如果调用相同的库，那么在内存里只需要有一份该共享库的实例，规避了空间浪费问题。动态库在程序运行时才被载入，也解决了静态库对程序的更新、部署和发布页会带来麻烦。用户只需要更新动态库即可.
+
+链接**静态库**生成可执行文件：
+
+```bash
+#进入src下
+$cd src
+g++ Swap.cpp -c -I../include
+ar rs libSwap.a Swap.o#创建静态库
+$cd ..
+g++ main.cpp -Iinclude -Lsrc -lSwap -o staticmain 
+#Linux下使用静态库，只需要在编译的时候，指定静态库的搜索路径（-L选项）、指定静态库名（不需要lib前缀和.a后缀，-l选项）
+```
+
+链接**动态库**生成可执行文件：
+
+```bash
+$cd src
+g++ Swap.cpp -I../include -fPIC -shared -o libSwap.so
+#等价于：gcc Swap.cpp -I../include -c -fPIC 
+#gcc -shared -o libSwap.so Swap.o
+#-fPIC告诉编译器生成位置独立的代码，知识创建共享库所必须的
+$cd ..
+g++ main.cpp -Iinclude -Lsrc -lSwap -o shareman
+```
+
+### 3.3.3 运行可执行文件
+
+```bash
+#运行可执行文件（静态库）
+./staticmain
+#运行可执行文件（动态库）
+LD_LIBRARY_PATH=src 
+./sharemain
+```
+
+
+
+
+
+
+
 
 
