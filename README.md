@@ -3,6 +3,6 @@
 # 文件目录
 [项目文件夹](./bili_vscode+linux)
 * [笔记图片资源包](./bili_vscode+linux/Pic)
-* [项目笔记](./bili_vscode_linux/VSCode-CMake-C-Cpp-Linux-notebook)
+* [项目笔记](./bili_vscode_linux/VSCode-CMake-C-Cpp-Linux-notebook.md)
 # 学习轨迹（可忽略）
 * 2024.6.8下午开始学习~
