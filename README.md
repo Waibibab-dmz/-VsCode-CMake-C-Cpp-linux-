@@ -6,3 +6,4 @@
 * [项目笔记](./bili_vscode+linux/VSCode-CMake-C-Cpp-Linux-notebook.md)
 # 学习轨迹（可忽略）
 * 2024.6.8下午开始学习~
+* 2024.6.8截止晚上学完linux系统介绍、开发环境搭建、GCC编译器
