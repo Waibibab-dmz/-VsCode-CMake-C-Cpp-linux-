@@ -503,10 +503,15 @@ sudo dpkg -i [deb文件名]
 
 ## 5.4 两个小项目
 
-通过手写2个小项目，呈现出基本的C++工程建立过程，并编译运行这两个小项目
+通过手写2个小项目，呈现出基本的C++工程建立过程，并编译运行这两个小项目（源代码已经放入相关文件夹中）
 
-* 项目一：Hello World
-* 项目二：Swap with class
+* 项目一：Hello World（project1）
+
+  包含：helloworld.cpp
+
+* 项目二：Swap with class（project2）
+
+  包含：include/swap.h    src/swap.c    main.c
 
 ### 5.4.1 高频使用技巧
 
@@ -667,3 +672,300 @@ set(CMAKE_BUILD_TYPE Debug)
 
 ## 6.4 CMake编译工程
 
+CMake目录结构：项目主目录存在一个CMakeLists.txt文件
+
+**两种方式设置编译规则：**
+
+1.包含源文件的子文件夹包含CMakeLists.txt文件，主目录的CMakeLists.txt通过add_subdirectory添加子目录即可
+
+2.包含源文件的子文件夹未包含CMakeLists.txt文件，子目录编译规则体现在主目录的CMakeList.txt中
+
+### 6.4.1 编译流程
+
+**在Linux平台下使用CMake构建C/C++工程的流程如下：**
+
+1.手动编写CMakeLists.txt
+2.执行命令cmake PATH 生成Makefile（PATH是顶层CMakeLists.txt所在的目录）
+3.执行命令make进行编译
+
+### 6.4.2 两种构建方式
+
+1.内部构建（in-source build）不推荐使用
+
+  内部构建会在同级目录下产生一大堆中间文件，这些中间文件并不是我们最终所需要的，和工程源文件放在一起会显得杂乱无章
+
+  ```cmake
+  #在当前目录下，编译本目录的CMakeLists.txt生成Makefile和其他文件
+  cmake .
+  #执行make命令，生成target
+  make
+  ```
+
+2.外部构建（out-of-source build）**推荐使用**
+
+  将编译输出文件与源文件放到不同目录中
+
+  `````cmake
+  #1.在当前目录下，创建build文件夹
+  mkdir build
+  #2.进入build文件夹
+  cd build
+  #3.编译上级目录的CMakeLists.txt，生成Makefile和其他文件
+  cmake ..
+  #4.执行make命令，生成target
+  make
+  `````
+
+  ## 6.5 【实战】CMake代码实践
+
+  ### 6.5.1 最小CMake工程
+
+  对于上面5.4的那个project1，在同级目录下新建文件CMakeList.txt：
+
+  ```cmake
+  cmake_minimum_required(VERSION 3.0)
+  
+  project(HELLOWORLD)
+  
+  add_executable(helloWorld_cmake helloworld.cpp)
+  ```
+
+  然后先尝试内部编译，在终端输入`cmake .`此时会产生很多文件，再输入`make`即可生成可执行文件helloWorld_cmake
+
+  再尝试外部编译，具体方法可以直接看6.4.2
+
+  ### 6.5.2 编译多个文件
+
+  对于上面5.4的那个project2，在同级目录下新建文件CMakeList.txt：
+
+  ```cmake
+  cmake_minimum_required(VERSION 3.0)
+  
+  project(SWAP)
+  
+  include_directories(include)
+  
+  add_executable(main_camke main.cpp src/swap.cpp)
+  ```
+
+  然后使用上述同样的思路进行外部or内部编译
+
+  # 第七讲：使用VSCode进行完整项目开发
+
+  ## 7.1 项目过程
+
+  这个项目在project2的基础上做了一些小的拓展，就不专门将项目代码放入文件夹中，而是全部放在笔记中
+
+  **案例：士兵有一把枪，他可以进行换子弹、开枪这两个操作，分别编写枪类和士兵类**
+
+  **项目目录包含：**
+
+  * include文件夹放置头文件
+  * src文件夹放置类源码
+  * build文件夹
+  * .vscode文件夹放置调试的json文件
+  * main.cpp
+
+**include文件夹**
+
+```c
+//Gun.h
+#pragma once
+#include<string>
+class Gun
+{
+ public:
+    Gun(std::string type){
+        this->bullet_count = 0;
+        this->type = type;
+    }
+    
+    void addBullet(int bullet_num);
+    bool shoot();
+ private:
+    int _bullet_count;
+    std::string _type;
+};
+
+//Soldier.h
+#pragma once
+#include<string>
+#include "include/Gun.h"
+class Soldier
+{
+public:
+    Soldier(std::string name);
+    void addGun();
+    void addBulletToGun(int num);
+    bool fire();
+private:
+    std::string _name;
+    Gun * _ptr_gun;
+};
+```
+
+**src文件夹**
+
+```cpp
+#Gun.cpp
+#include "include/Gun.h"
+#include <iostream>
+using namespace std;
+void Gun::addBullet(int bullet_num)
+{
+    this->_bullet_count += bullet_num;
+}
+
+bool Gun::shoot()
+{
+    if(this->_bullet_count <= 0)
+    {
+        cout<<"no bullet"<<endl;
+        return false;
+    }
+    this->_bullet_count -= 1;
+    cout<<"shoot successfully"<<endl;
+    return true;
+}
+
+#Soldier.cpp
+#include "include/Soldier.h"
+#include<iostream>
+using namespace std;
+
+Soldier::Soldier(string name)
+{
+    this->_name = name;
+    this->_ptr_gun = nullptr;
+}
+
+void Soldier::addGun(Gun * ptr_gun)
+{
+    this->_ptr_gun = ptr_gun;
+}
+
+void Soldier::addBulletToGun(int num)
+{
+    this->_ptr_gun->addBullet(num);
+}
+
+bool Soldier::fire()
+{
+    this->_ptr_gun->shoot();
+}
+
+Soldier::~Soldier()
+{
+    if(this->_ptr_gun==nullptr)
+    {
+        return;
+    }
+    delete this->_ptr_gun;
+    this->_ptr_gun = nullptr;
+}
+```
+
+**main.cpp**
+
+```cpp
+#include "include/Soldier.h"
+#include "include/Gun.h"
+void test()
+{
+    Soldier xusanduo("xusanduo");
+    xusanduo.addGun(new Gun("AK47"));
+    xusanduo.addBulletToGun(20);
+    xusanduo.fire();
+}
+int main(int argc,char **argv)
+{
+    test();
+    return 0;
+}
+```
+
+**CMakeLists.txt**
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+
+project(SOLDIERFIRE)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -Wall")
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+add_executable(my_cmake_exe main.cpp src/Gun.cpp src/Soldier.cpp)
+
+set(CMAKE_BUILD_TYPE Debug)
+```
+
+
+
+## 7.2 配置json文件并调试项目
+
+点击"create a launch.json File"选择"C++ (GDB/LLDB)"再选择"g++生成和调试活动文件"
+
+在生成的launch.json中：
+
+```json
+"program":"${fileDirname}/${fileBasenameNoExtension}"
+//将上述改成：
+"${workspaceFolder}/build/my_cmake_exe"
+//其中"cwd":"${workspaceFolder}"
+```
+
+然后进入build文件夹，重新make一下，然后进入main.cpp在main函数中的`test()`所在行打一个断点，按F5开始调试（如果调试失败可以把CMakeLists.txt中的-g和-O2选项去掉，再加一行`set(CMAKE_BUILD_TYPE Debug)`
+
+此时，如果在main.cpp中增加一行代码，必须要对整个项目重新编译才能再次调试，如果想要实现自动调试，首先在.vscode添加一个tasks.json内容可以复制下面的代码：
+
+```json
+{
+    "version": "2.0.0",
+    "options": {
+        "cwd": "${workspaceFolder}/build"
+    },
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "cmake",
+            "command": "cmake",
+            "args": [ 
+                ".."
+            ]
+                
+        },
+        {
+            "label": "make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "make",
+            "args": [ 
+
+            ]
+        },
+        {
+            "label": "Build",
+            "dependsOrder": "sequence",
+            "dependsOn": [ 
+                "cmake",
+                "make"
+            ]
+        }
+    ],
+}
+```
+
+然后再在launch.json中做如下修改：
+
+```json
+"preLaunchTask":"Build"
+```
+
+此时只需要设置断点、输入F5就可以自动进行重编译并开始调试
+
+
+
+  
