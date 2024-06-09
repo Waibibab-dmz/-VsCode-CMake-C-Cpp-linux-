@@ -411,11 +411,259 @@ LD_LIBRARY_PATH=src
 ./sharemain
 ```
 
+# 第四讲：GDB调试器
 
+**前言：**
 
+* GDB(DNU Debugger)是一个用来调试C/C++程序的功能强大的调试器，是Linux系统开发C/C++最常用的调试器
+* 可以使用GDB来跟踪程序错误，减少程序员工作量
+* VSCode通过GDB调用实现C/C++调试工作
 
+**GDB主要功能：**
 
+* 设置断点
+* 单步执行程序
+* 查看变量值变化
+* 动态改变程序运行环境
+* 分析崩溃程序产生的core文件
 
+## 4.1 常用调试命令参数
 
+调试开始：执行`gdb [exefilename]` 进入调试程序
 
+```bash
+#以下命令括号为简化使用
+$(gdb)help(h) #查看命令帮助 help+命令
+$(gdb)run(r) #重新开始运行文件
+$(gdb)start #单步执行
+$(gdb)list(l)#查看源码（list-n：从第n行开始看代码 list+函数名：查看具体函数）
+$(gdb)set #设置变量的值
+$(gdb)next(n) #单步调试（跳过函数）
+$(gdb)step(n) #单步调试（跳入函数内部）
+$(gdb)backtrace(bt) #查看函数的调用的栈帧和层级关系
+$(gdb)frame(f) #切换函数栈帧
+$(gdb)info(i) #查看变量值
+$(gdb)finish #结束当前函数
+$(gdb)continue(c) #继续运行
+$(gdb)print(p) #打印值及地址
+$(gdb)quit(q) #退出gdb
+$(gdb)break+num(b) #在第num行设置断点
+$(gdb)info breakpoints/watch #查看当前设置的所有断点/监视点
+$(gdb)delete breakpoints num(d) #删除第num个断点
+$(gdb)display/undisplay #追踪/取消查看具体变量的值
+$(gdb)watch #设置监视点
+$(gdb)enable/disable breakpoints #启用/禁用断点
+```
+
+>编译程序时需要加-g才能用gdb调试： gcc -g main.c -o main
+
+# 第五讲：IDE-VSCode
+
+## 5.1 界面介绍
+
+**在Ubuntu中下载VSCode：**
+
+* 方法一：使用Ubuntu自带的应用中心直接安装（不推荐，因为这种方式下载的版本是删减版，可能会有功能的缺失！）
+* 方法二：自己在网上下载deb包，地址：https://code.visualstudio.com/docs?dv=linux64百度网盘链接：https://pan.baidu.com/s/1HKBQ6k9X-ZVX4C2vYgBFSA 提取码：7ze2（感谢csdn博主：“[LL596214569](https://blog.csdn.net/LL596214569)”提供的deb包）然后再终端直接输入以下代码：
+
+```bash
+sudo dpkg -i [deb文件名]
+```
+
+如果出现下图，则说明安装成功：
+
+![pic](Pic/chapter5-1.png)
+
+具体的界面介绍暂略
+
+## 5.2 插件安装
+
+以下三款插件式在Linux下CMake开发C/C++的三款必备插件：
+
+* C/C++
+* CMake
+* CMake Tools
+
+## 5.3 快捷键
+
+**官方快捷键总表**
+
+![Pic](Pic/chapter5-2.png)
+
+**常用快捷键总结**
+
+| 功能                  | 快捷键       | 功能            | 快捷键      |
+| --------------------- | ------------ | --------------- | ----------- |
+| 转到文件/其它常用操作 | ctrl+P       | 关闭当前文件    | ctrl+W      |
+| 打开命令面板          | ctrl+shift+P | 当前行上移/下移 | Alt+up/down |
+| 打开终端              | ctrl+`       | 变量统一重命名  | F2          |
+| 关闭侧边栏            | ctrl+B       | 转到定义处      | F12         |
+| 复制文本              | ctrl+C       | 粘贴文本        | ctrl+V      |
+| 保存文件              | ctrl+S       | 撤销操作        | ctrl+Z      |
+
+## 5.4 两个小项目
+
+通过手写2个小项目，呈现出基本的C++工程建立过程，并编译运行这两个小项目
+
+* 项目一：Hello World
+* 项目二：Swap with class
+
+### 5.4.1 高频使用技巧
+
+* 左右分屏（split right）
+* 固定打开文件
+* 格式化代码（ctrl shift I）
+* Rename Symbol（F2）
+* 显示minimap
+* 侧边栏查看OUTLINE
+* 全屏（F11）
+* 关闭多个打开的文件
+
+### 5.4.2 代码编写
+
+### 5.4.3 编译并运行
+
+# 第六讲：CMake
+
+**前言：**
+
+* CMake是一个跨平台的安装编译工具，可以用简单的语句来描述所有平台的安装（编译过程）
+* CMake可以说已经成为大部分C++开源项目标配
+
+## 6.1 Cross-platform development
+
+ 如果没有实现跨平台的功能，此时想要在项目当中添加一个cpp文件，就会十分麻烦，如下所示：
+
+![Pic](Pic/chapter6-1.png)
+
+如果使用了CMake去构建工程：
+
+![Pic](Pic/chapter6-2.png)
+
+此时想要去增加一个文件：
+
+![Pic](Pic/chapter6-3.png)
+
+## 6.2 语法特性介绍
+
+* 基本语法格式：指令（参数1，参数2...)
+  * 参数使用括弧括起来
+  * 参数之间使用空格或分号分开
+* 指令是大小写无关的，参数和变量是大小写相关的
+
+```bash
+set(HELLO hello.cpp)
+add_executable(hello main.cpp hello.cpp)
+ADD_EXECUTABLE(hello main.cpp ${HELLO})
+```
+
+* 变量使用${}方式取值，但是在IF控制语句中是直接使用变量名
+
+## 6.3 重要指令和CMake常用变量
+
+### 6.3.1 重要指令
+
+**cmake_minimum_required 指定CMake的最小版本要求**
+
+```cmake
+cmake_minimum_required(VERSION 2.8.3)
+```
+
+**project 定义工程名称，并指定工程支持的语言**
+
+```cmake
+#语法：project(projectname [CXX][C][Java])
+project(HELLOWORLD)
+```
+
+**set 显示定义变量**
+
+```cmake
+set(SRC sayhello.cpp hello.cpp)
+```
+
+**include_directories 向工程添加多个特定的头文件的搜索路径**
+
+```cmake
+#将/usr/include/myincludefolder 和 ./include 添加到头文件搜索路径
+include_directories(/usr/include/myincludefolder ./include)
+```
+
+**include_directories 向工程添加多个特定库文件搜索路径**
+
+```cmake
+link_directories(/usr/lib/mylibfolder ./lib)
+```
+
+**add_library 生成库文件**
+
+```cmake
+#语法：add_library(libname[SHARED|STATIC|MODULE][EXCLUDE_FROM_ALL] source1 source2 ... sourceN)
+#通过变量SRC生成libhello.so共享库
+add_library(hello SHARED ${SRC})
+```
+
+**add_compile_options 添加编译参数**
+
+```cmake
+add_compile_options(-wall -std=c++11 -o2)
+```
+
+**add_executable 生成可执行文件**
+
+```cmake
+#编译main.cpp生成可执行文件main
+add_executable(main main.cpp)
+```
+
+**target_link_libraries 为target添加需要链接的共享库** 相当于g++的-l参数
+
+```cmake
+#将hello动态库文件链接到可执行文件main
+target_link_libraries(main hello)
+```
+
+**add_subdirectory 向当前工程添加存放源文件的子目录，并可以指定中间二进制和目标二进制存放位置**
+
+```cmake
+#添加src子目录，src中需要有一个CMakeList.txt
+add_subdirectory(src)
+```
+
+**aux_source_directory 发现一个目录下所有的源代码文件并将列表存储在一个变量中，这个指令临时使用来自动构建源文件列表**
+
+```cmake
+#定义SRC变量，其值为当前目录下所有的源代码文件
+aux_source_directory(. SRC)
+#编译SRC变量所代表的源代码文件，并生成main可执行文件
+add_executable(main ${SRC})
+```
+
+### 6.3.2 CMake常用变量
+
+* **CMAKE_C_FLAGS    gcc编译选项**
+* **CMAKE_CXX_FLAGS    g++编译选项**
+
+```cmake
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+```
+
+* **CMAKE_BUILD_TYPE    编译类型（Debug，Release）**
+
+```cmake
+set(CMAKE_BUILD_TYPE Debug)
+```
+
+* **CMAKE_BINARY_DIR**
+* **PROJECT_BINARY_DIR**
+* <projectname>**_BINARY_DIR**
+
+>这三个变量指代的内容一致
+
+* **CMAKE_C_COMPILER:指定C编译器**
+* **CMAKE_CXX_COMPILER:指定C++编译器**
+* **EXECUTABLE_OUTPUT_PATH:可执行文件输出的存放路径**
+* **LIBRARY_OUTPUT_PATH:库文件输出的存放路径**
+
+## 6.4 CMake编译工程
 
